@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buscaminas</title>
+<style>
+  :root {
+    --x: #38e1ff;
+    --o: #ff4d8d;
+    --bg: #111111;
+    --card: #161a30;
+    --line: #2a3050;
+    --text: #e8ecff;
+    --muted: #8b93bd;
+    --cell: 32px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    color: var(--text);
+    background: #111111;
+  }
+
+  .game {
+    position: relative;
+    max-width: 100%;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px 22px 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .55);
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+
+  .back {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--muted);
+    text-decoration: none;
+    background: #0f1226;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    transition: color .2s ease, background .2s ease, border-color .2s ease;
+  }
+
+  .back:hover { color: var(--text); background: #1c2140; border-color: #4a5480; }
+
+  .menu { position: absolute; top: 16px; right: 16px; }
+
+  .menu-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--text);
+    background: #0f1226;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+  }
+
+  .menu-btn:hover { background: #1c2140; border-color: #4a5480; }
+
+  .menu-dropdown {
+    position: absolute;
+    top: 46px;
+    right: 0;
+    min-width: 190px;
+    padding: 6px;
+    background: #1a1f3a;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+    display: none;
+    z-index: 10;
+  }
+
+  .menu-dropdown.open { display: block; }
+
+  .menu-title {
+    padding: 6px 12px 4px;
+    font-size: .7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  .menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: inherit;
+    font-size: .95rem;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .menu-dropdown button:hover { background: #242b52; }
+  .menu-dropdown button.active { color: var(--x); font-weight: 600; }
+
+  .hud {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .hud-item {
+    text-align: center;
+    background: #0f1226;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 4px;
+  }
+
+  .hud-item b {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .hud-item span {
+    font-size: .72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  .restart {
+    align-self: stretch;
+    font-size: 1.4rem;
+    color: var(--text);
+    background: #0f1226;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+  }
+
+  .restart:hover { background: #1c2140; border-color: #4a5480; }
+
+  .status {
+    text-align: center;
+    min-height: 22px;
+    margin-bottom: 14px;
+    font-size: .98rem;
+    color: var(--muted);
+  }
+
+  .status.win { color: var(--x); }
+  .status.lose { color: var(--o); }
+
+  .board-wrap {
+    overflow: auto;
+    max-width: 100%;
+    padding-bottom: 4px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 9), var(--cell));
+    gap: 4px;
+    justify-content: center;
+    width: max-content;
+    margin: 0 auto;
+  }
+
+  .cell {
+    width: var(--cell);
+    height: var(--cell);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--cell) * .5);
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--text);
+    background: #232a4d;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s ease;
+  }
+
+  .cell:hover:not(.revealed) { background: #2d3663; }
+  .cell:disabled { cursor: default; }
+
+  .cell.revealed {
+    background: #0f1226;
+    border: 1px solid #1b2140;
+    cursor: default;
+  }
+
+  .cell.flagged { color: var(--o); }
+  .cell.mine { color: #ffb86c; }
+  .cell.exploded { background: #b3232e; color: #fff; }
+
+  .cell.n1 { color: #5cb3ff; }
+  .cell.n2 { color: #4cd97b; }
+  .cell.n3 { color: #ff6b6b; }
+  .cell.n4 { color: #c792ea; }
+  .cell.n5 { color: #ffb86c; }
+  .cell.n6 { color: #4dd6c1; }
+  .cell.n7 { color: #e8ecff; }
+  .cell.n8 { color: #8b93bd; }
+</style>
+</head>
+<body>
+<main class="game">
+  <a class="back" href="index.html" aria-label="Volver al inicio">&#8592;</a>
+
+  <div class="menu">
+    <button class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-label="Opciones">&#9776;</button>
+    <div class="menu-dropdown" id="menuDropdown">
+      <div class="menu-title">Dificultad</div>
+      <button class="diff-opt" data-diff="facil">Fácil · 9×9 · 10 minas</button>
+      <button class="diff-opt" data-diff="medio">Medio · 16×16 · 40 minas</button>
+      <button class="diff-opt" data-diff="dificil">Difícil · 16×30 · 99 minas</button>
+    </div>
+  </div>
+
+  <h1>Buscaminas</h1>
+
+  <div class="hud">
+    <div class="hud-item"><b id="mineCount">10</b><span>Minas</span></div>
+    <button class="restart" id="restart" aria-label="Nueva partida">&#8635;</button>
+    <div class="hud-item"><b id="timer">0</b><span>Tiempo</span></div>
+  </div>
+
+  <div class="status" id="status" aria-live="polite">Encontrá todas las minas</div>
+
+  <div class="board-wrap">
+    <div class="board" id="board" role="grid" aria-label="Tablero de buscaminas"></div>
+  </div>
+</main>
+
+<script>
+  const DIFFS = {
+    facil: { rows: 9, cols: 9, mines: 10 },
+    medio: { rows: 16, cols: 16, mines: 40 },
+    dificil: { rows: 16, cols: 30, mines: 99 }
+  };
+
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  const mineCountEl = document.getElementById('mineCount');
+  const timerEl = document.getElementById('timer');
+  const restartEl = document.getElementById('restart');
+  const menuBtn = document.getElementById('menuBtn');
+  const menuDropdown = document.getElementById('menuDropdown');
+
+  let rows = 9;
+  let cols = 9;
+  let mines = 10;
+  let grid = [];
+  let cellEls = [];
+  let started = false;
+  let over = false;
+  let won = false;
+  let flags = 0;
+  let revealedCount = 0;
+  let explodedIndex = -1;
+  let seconds = 0;
+  let timerId = null;
+
+  function neighbors(i) {
+    const r = Math.floor(i / cols);
+    const c = i % cols;
+    const out = [];
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (!dr && !dc) continue;
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) out.push(nr * cols + nc);
+      }
+    }
+    return out;
+  }
+
+  function buildBoard() {
+    cellEls = [];
+    boardEl.innerHTML = '';
+    boardEl.style.setProperty('--cols', cols);
+    for (let i = 0; i < rows * cols; i++) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'cell';
+      el.dataset.index = i;
+      el.setAttribute('aria-label', 'Casilla ' + (i + 1));
+      el.addEventListener('click', () => play(i));
+      el.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        toggleFlag(i);
+      });
+      cellEls.push(el);
+      boardEl.appendChild(el);
+    }
+  }
+
+  function render() {
+    for (let i = 0; i < grid.length; i++) {
+      const c = grid[i];
+      const el = cellEls[i];
+      el.className = 'cell';
+      el.textContent = '';
+      if (c.revealed) {
+        el.classList.add('revealed');
+        if (c.mine) {
+          el.classList.add('mine');
+          el.textContent = '\u2731';
+        } else if (c.adj > 0) {
+          el.classList.add('n' + c.adj);
+          el.textContent = c.adj;
+        }
+        if (i === explodedIndex) el.classList.add('exploded');
+      } else if (c.flagged) {
+        el.classList.add('flagged');
+        el.textContent = '\u2691';
+      }
+    }
+  }
+
+  function updateHud() {
+    mineCountEl.textContent = mines - flags;
+    timerEl.textContent = seconds;
+  }
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  function placeMines(safe) {
+    const forbidden = new Set([safe, ...neighbors(safe)]);
+    const pool = [];
+    for (let i = 0; i < rows * cols; i++) if (!forbidden.has(i)) pool.push(i);
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    for (let k = 0; k < mines && k < pool.length; k++) grid[pool[k]].mine = true;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i].mine) continue;
+      let adj = 0;
+      for (const n of neighbors(i)) if (grid[n].mine) adj++;
+      grid[i].adj = adj;
+    }
+  }
+
+  function startTimer() {
+    clearInterval(timerId);
+    seconds = 0;
+    updateHud();
+    timerId = setInterval(() => {
+      seconds++;
+      timerEl.textContent = seconds;
+    }, 1000);
+  }
+
+  function endGame(win, exploded) {
+    over = true;
+    won = win;
+    explodedIndex = typeof exploded === 'number' ? exploded : -1;
+    clearInterval(timerId);
+    if (win) {
+      for (const c of grid) if (c.mine) c.flagged = true;
+      flags = mines;
+    } else {
+      for (const c of grid) if (c.mine && !c.flagged) c.revealed = true;
+    }
+  }
+
+  function revealFrom(i) {
+    const stack = [i];
+    while (stack.length) {
+      const idx = stack.pop();
+      const c = grid[idx];
+      if (c.revealed || c.flagged) continue;
+      c.revealed = true;
+      revealedCount++;
+      if (c.mine) {
+        endGame(false, idx);
+        return;
+      }
+      if (c.adj === 0) {
+        for (const n of neighbors(idx)) if (!grid[n].revealed) stack.push(n);
+      }
+    }
+  }
+
+  function play(i) {
+    if (over || grid[i].revealed) return;
+    if (grid[i].flagged) return;
+
+    if (!started) {
+      placeMines(i);
+      started = true;
+      startTimer();
+    }
+
+    revealFrom(i);
+
+    if (!over && revealedCount === rows * cols - mines) endGame(true);
+    if (over) setStatus(won ? '¡Ganaste!' : '¡Perdiste!', won ? 'win' : 'lose');
+
+    render();
+    updateHud();
+  }
+
+  function toggleFlag(i) {
+    if (over || grid[i].revealed) return;
+    grid[i].flagged = !grid[i].flagged;
+    flags += grid[i].flagged ? 1 : -1;
+    render();
+    updateHud();
+  }
+
+  function newGame() {
+    grid = Array.from({ length: rows * cols }, () => ({
+      mine: false, revealed: false, flagged: false, adj: 0
+    }));
+    started = false;
+    over = false;
+    won = false;
+    flags = 0;
+    revealedCount = 0;
+    explodedIndex = -1;
+    clearInterval(timerId);
+    timerId = null;
+    seconds = 0;
+    buildBoard();
+    render();
+    updateHud();
+    setStatus('Encontrá todas las minas');
+  }
+
+  function setDifficulty(key) {
+    const d = DIFFS[key];
+    if (!d) return;
+    rows = d.rows;
+    cols = d.cols;
+    mines = d.mines;
+    newGame();
+    document.querySelectorAll('.diff-opt').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.diff === key);
+    });
+  }
+
+  function openMenu() {
+    menuDropdown.classList.add('open');
+    menuBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMenu() {
+    menuDropdown.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  restartEl.addEventListener('click', newGame);
+
+  menuBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (menuDropdown.classList.contains('open')) closeMenu();
+    else openMenu();
+  });
+
+  menuDropdown.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', closeMenu);
+
+  document.querySelectorAll('.diff-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setDifficulty(btn.dataset.diff);
+      closeMenu();
+    });
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key.toLowerCase() === 'r') newGame();
+  });
+
+  setDifficulty('facil');
+</script>
+</body>
+</html>
