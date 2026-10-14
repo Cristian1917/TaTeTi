@@ -1,6 +1,6 @@
-# Ta Te Ti, Buscaminas y Pac-Man
+# Ta Te Ti, Buscaminas, Pac-Man y Manager de Fútbol
 
-Colección de juegos clásicos hecha con HTML, CSS y JavaScript puro. Sin dependencias ni instalación: se abre directo en el navegador.
+Colección de juegos hecha con HTML, CSS y JavaScript puro. Sin dependencias ni instalación: se abre directo en el navegador.
 
 ## Demo
 
@@ -30,6 +30,18 @@ Podés probarlo online desde GitHub Pages (ver la sección [Publicar en GitHub P
 - Dificultad creciente: la velocidad de los fantasmas sube un 10% cada ciclo de tres niveles.
 - Controles con flechas/WASD o deslizando el dedo en el celular.
 
+### Manager de Fútbol (`futbol-manager.html`)
+
+- Elegís uno de los diez clubes de la liga y dirigís una temporada de 18 jornadas (ida y vuelta).
+- Plantel de 18 jugadores por equipo, agrupados por posición (arquero, defensor, mediocampista y delantero), con valoración individual, edad y sus datos físicos: altura (cm), velocidad y resistencia.
+- Cada atributo influye en el juego: la velocidad suma al ataque, y la altura y la resistencia aportan a la defensa.
+- Al empezar una temporada nueva, todos los jugadores suman un año de edad.
+- Alineación interactiva sobre una cancha, con cambio de titulares y suplentes y botón de alineación automática.
+- Táctica: cinco formaciones (4-4-2, 4-3-3, 3-5-2, 4-5-1 y 5-3-2) y tres mentalidades (defensiva, equilibrada y ofensiva) que afectan el ataque y la defensa.
+- Simulación automática de cada fecha: se juega toda la jornada de una vez, con marcadores y goleadores generados según la fuerza de cada equipo y la ventaja de local.
+- Tabla de posiciones completa (PJ, G, E, P, GF, GC, DIF y puntos), resultados por fecha y tabla de goleadores.
+- El progreso se guarda en el navegador, así que podés cerrar y continuar más tarde. También podés cambiar de club, empezar una temporada nueva o borrar la partida desde el menú.
+
 ## Cómo jugar
 
 1. Descargá o cloná el repositorio.
@@ -46,6 +58,7 @@ No hace falta servidor ni instalar nada.
 ├── tateti.html       # Ta Te Ti (3×3 y 5×5, con IA)
 ├── buscaminas.html   # Buscaminas (3 dificultades)
 ├── pacman.html       # Pac-Man (3 laberintos y dificultad creciente)
+├── futbol-manager.html # Manager de Fútbol (liga, plantel, táctica y simulación)
 ├── README.md         # Este archivo
 └── .gitignore
 ```

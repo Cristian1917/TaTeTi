@@ -160,6 +160,50 @@
 
   .card.featured .cta { background: linear-gradient(90deg, var(--o), #ff8fb3); }
 
+  .icon.fut {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(#2f7d44, #1f5c30);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .icon.fut::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: rgba(255, 255, 255, .3);
+  }
+
+  .icon.fut::after {
+    content: "";
+    position: absolute;
+    width: 66px;
+    height: 66px;
+    border: 2px solid rgba(255, 255, 255, .3);
+    border-radius: 50%;
+  }
+
+  .ball {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, #10131f 0 6px, transparent 6px),
+      radial-gradient(circle at 27% 30%, #10131f 0 4px, transparent 4px),
+      radial-gradient(circle at 72% 33%, #10131f 0 4px, transparent 4px),
+      radial-gradient(circle at 38% 73%, #10131f 0 4px, transparent 4px),
+      radial-gradient(circle at 71% 70%, #10131f 0 4px, transparent 4px),
+      #f4f6ff;
+    box-shadow: 0 0 16px rgba(255, 255, 255, .35);
+  }
+
   .icon.pac {
     display: flex;
     align-items: center;
@@ -190,7 +234,7 @@
 </head>
 <body>
 <main class="landing">
-  <h1>Juegos Clásicos</h1>
+  <h1>Juegos</h1>
   <p class="tagline">Para pasar el rato</p>
 
   <div class="games">
@@ -229,13 +273,22 @@
     </a>
 
     <a class="card" href="pacman.html">
-      <span class="badge">Nuevo</span>
       <div class="icon pac" aria-hidden="true">
         <div class="pacman"></div>
         <div class="dots"><span></span><span></span><span></span></div>
       </div>
       <h2>Pac-Man</h2>
       <p>Comé todos los puntos esquivando fantasmas. Tres laberintos y dificultad creciente.</p>
+      <span class="cta">Jugar</span>
+    </a>
+
+    <a class="card" href="futbol-manager.html">
+      <span class="badge">Nuevo</span>
+      <div class="icon fut" aria-hidden="true">
+        <span class="ball"></span>
+      </div>
+      <h2>Manager de Fútbol</h2>
+      <p>Elegí tu club, armá el equipo y dirigí la temporada jornada a jornada.</p>
       <span class="cta">Jugar</span>
     </a>
   </div>
