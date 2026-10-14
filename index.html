@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tres en Raya</title>
+<style>
+  :root {
+    --x: #38e1ff;
+    --o: #ff4d8d;
+    --bg: #0d1020;
+    --card: #161a30;
+    --line: #2a3050;
+    --text: #e8ecff;
+    --muted: #8b93bd;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 20% 10%, #1c2450 0%, transparent 55%),
+      radial-gradient(circle at 85% 90%, #3a1140 0%, transparent 55%),
+      var(--bg);
+  }
+
+  .game {
+    width: 100%;
+    max-width: 380px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 26px 22px 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .55);
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+
+  .scores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .score {
+    background: #0f1226;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 4px;
+  }
+
+  .score b {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .score span {
+    font-size: .72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  .score.x b { color: var(--x); }
+  .score.o b { color: var(--o); }
+
+  .status {
+    text-align: center;
+    min-height: 22px;
+    margin-bottom: 14px;
+    font-size: .98rem;
+    color: var(--muted);
+  }
+
+  .status.win-x { color: var(--x); }
+  .status.win-o { color: var(--o); }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f1226;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    font-size: clamp(2.4rem, 12vw, 3.6rem);
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--text);
+    cursor: pointer;
+    transition: transform .12s ease, border-color .2s ease, background .2s ease;
+    animation: pop .18s ease;
+  }
+
+  .cell:hover:not(:disabled) {
+    border-color: #4a5480;
+    background: #141833;
+  }
+
+  .cell:disabled { cursor: default; }
+
+  .cell.x { color: var(--x); text-shadow: 0 0 18px rgba(56, 225, 255, .5); }
+  .cell.o { color: var(--o); text-shadow: 0 0 18px rgba(255, 77, 141, .5); }
+
+  .cell.win {
+    border-color: #ffd166;
+    background: rgba(255, 209, 102, .12);
+    animation: glow .7s ease-in-out infinite alternate;
+  }
+
+  .controls {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  button.reset {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #0d1020;
+    background: linear-gradient(90deg, var(--x), #6ee7ff);
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: filter .2s ease, transform .1s ease;
+  }
+
+  button.reset:hover { filter: brightness(1.1); }
+  button.reset:active { transform: scale(.98); }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .9rem;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle input { accent-color: var(--x); width: 16px; height: 16px; cursor: pointer; }
+
+  @keyframes pop { from { transform: scale(.85); } to { transform: scale(1); } }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 0 rgba(255, 209, 102, 0); }
+    to { box-shadow: 0 0 22px rgba(255, 209, 102, .55); }
+  }
+</style>
+</head>
+<body>
+<main class="game">
+  <h1>Tres en Raya</h1>
+
+  <div class="scores">
+    <div class="score x"><b id="scoreX">0</b><span>Jugador X</span></div>
+    <div class="score"><b id="scoreD">0</b><span>Empates</span></div>
+    <div class="score o"><b id="scoreO">0</b><span>Jugador O</span></div>
+  </div>
+
+  <div class="status" id="status" aria-live="polite">Turno de X</div>
+
+  <div class="board" id="board" role="grid" aria-label="Tablero de tres en raya"></div>
+
+  <div class="controls">
+    <button class="reset" id="reset">Nueva partida</button>
+    <label class="toggle">
+      <input type="checkbox" id="aiMode"> Jugar contra la máquina
+    </label>
+  </div>
+</main>
+
+<script>
+  const WINS = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
+  ];
+
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  const resetEl = document.getElementById('reset');
+  const aiModeEl = document.getElementById('aiMode');
+  const scoreEls = {
+    X: document.getElementById('scoreX'),
+    O: document.getElementById('scoreO'),
+    D: document.getElementById('scoreD')
+  };
+
+  let cells = [];
+  let state = Array(9).fill('');
+  let turn = 'X';
+  let finished = false;
+  let aiMode = false;
+  let thinking = false;
+  const score = { X: 0, O: 0, D: 0 };
+
+  function buildBoard() {
+    cells = [];
+    boardEl.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('button');
+      cell.className = 'cell';
+      cell.type = 'button';
+      cell.dataset.index = i;
+      cell.setAttribute('aria-label', 'Casilla ' + (i + 1));
+      cell.addEventListener('click', () => play(i));
+      cells.push(cell);
+      boardEl.appendChild(cell);
+    }
+  }
+
+  function render() {
+    for (let i = 0; i < 9; i++) {
+      cells[i].textContent = state[i];
+      cells[i].className = 'cell' + (state[i] ? ' ' + state[i].toLowerCase() : '');
+    }
+    scoreEls.X.textContent = score.X;
+    scoreEls.O.textContent = score.O;
+    scoreEls.D.textContent = score.D;
+  }
+
+  function findWinner(board) {
+    for (const [a, b, c] of WINS) {
+      if (board[a] && board[a] === board[b] && board[b] === board[c]) return board[a];
+    }
+    return null;
+  }
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  function play(index) {
+    if (finished || thinking || state[index]) return;
+    if (aiMode && turn === 'O') return;
+
+    state[index] = turn;
+    render();
+
+    if (finishTurn()) return;
+
+    turn = turn === 'X' ? 'O' : 'X';
+    setStatus('Turno de ' + turn);
+
+    if (aiMode && turn === 'O') aiMove();
+  }
+
+  function finishTurn() {
+    const winner = findWinner(state);
+
+    if (winner) {
+      finished = true;
+      score[winner]++;
+      highlight(winner);
+      render();
+      setStatus(winner === 'X' ? '¡Gana X!' : '¡Gana O!', 'win-' + winner.toLowerCase());
+      disableAll();
+      return true;
+    }
+
+    if (state.every(v => v)) {
+      finished = true;
+      score.D++;
+      render();
+      setStatus('¡Empate!');
+      disableAll();
+      return true;
+    }
+
+    return false;
+  }
+
+  function highlight(winner) {
+    for (const [a, b, c] of WINS) {
+      if (state[a] === winner && state[b] === winner && state[c] === winner) {
+        cells[a].classList.add('win');
+        cells[b].classList.add('win');
+        cells[c].classList.add('win');
+      }
+    }
+  }
+
+  function disableAll() {
+    cells.forEach(c => { c.disabled = true; });
+  }
+
+  function minimax(board, depth, isMax) {
+    const winner = findWinner(board);
+    if (winner === 'O') return 10 - depth;
+    if (winner === 'X') return depth - 10;
+    if (board.every(v => v)) return 0;
+
+    if (isMax) {
+      let best = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (board[i]) continue;
+        board[i] = 'O';
+        best = Math.max(best, minimax(board, depth + 1, false));
+        board[i] = '';
+      }
+      return best;
+    }
+
+    let best = Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i]) continue;
+      board[i] = 'X';
+      best = Math.min(best, minimax(board, depth + 1, true));
+      board[i] = '';
+    }
+    return best;
+  }
+
+  function bestMove() {
+    const simulation = state.slice();
+    let bestScore = -Infinity;
+    let candidates = [];
+
+    for (let i = 0; i < 9; i++) {
+      if (state[i]) continue;
+      simulation[i] = 'O';
+      const value = minimax(simulation, 1, false);
+      simulation[i] = '';
+      if (value > bestScore) {
+        bestScore = value;
+        candidates = [i];
+      } else if (value === bestScore) {
+        candidates.push(i);
+      }
+    }
+
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  function aiMove() {
+    thinking = true;
+    setStatus('Pensando...');
+    setTimeout(() => {
+      thinking = false;
+      const move = bestMove();
+      if (move === undefined) return;
+      state[move] = 'O';
+      render();
+      if (finishTurn()) return;
+      turn = 'X';
+      setStatus('Turno de X');
+    }, 350);
+  }
+
+  function reset() {
+    state = Array(9).fill('');
+    turn = 'X';
+    finished = false;
+    thinking = false;
+    cells.forEach(c => { c.disabled = false; });
+    render();
+    setStatus('Turno de X');
+    if (aiMode && turn === 'O') aiMove();
+  }
+
+  resetEl.addEventListener('click', reset);
+
+  aiModeEl.addEventListener('change', () => {
+    aiMode = aiModeEl.checked;
+    score.X = score.O = score.D = 0;
+    reset();
+  });
+
+  document.addEventListener('keydown', e => {
+    const map = {
+      ArrowLeft: 0, ArrowUp: 0, ArrowRight: 0, ArrowDown: 0
+    };
+    if (e.key in map) e.preventDefault();
+    if (/^[1-9]$/.test(e.key)) play(Number(e.key) - 1);
+    if (e.key.toLowerCase() === 'r') reset();
+  });
+
+  buildBoard();
+  render();
+</script>
+</body>
+</html>

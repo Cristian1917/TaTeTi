@@ -1,0 +1,15 @@
+# Sistemas operativos
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Node (si más adelante lo usás)
+node_modules/
